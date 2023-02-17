@@ -12,7 +12,7 @@ function updateObject(object, newValue, path) {
 
 function A(props) {
   let { data, setData, path } = props || {}
-  if (data === undefined) {
+  if (data === undefined || data == null) {
     return null
   }
   if (typeof data === 'string' || typeof data === 'number') {
@@ -34,7 +34,21 @@ function A(props) {
     )
   }
   if (typeof data === 'boolean') {
-    return <input type="checkbox" checked={data} />
+    return (
+      <input
+        type="checkbox"
+        checked={data}
+        onChange={e => {
+          setData(prev => {
+            if (typeof prev === 'boolean') {
+              return !data
+            }
+            updateObject(prev, !data, path.substring(1, path.length))
+            return { ...prev }
+          })
+        }}
+      />
+    )
   }
   if (Array.isArray(data)) {
     return (
@@ -64,12 +78,12 @@ function A(props) {
 }
 
 export default function Home() {
-  const [data, setData] = useState()
+  const [data, setData] = useState({})
   console.log(`data`, data)
   useEffect(() => {
     const fn = async () => {
       const response = await axios.get(
-        'https://ks-setting-admin.kyberengineering.io/api/v1/admin/notification/topic-groups',
+        'https://meta-aggregator.dev.kyberengineering.io/polygon/api/v1/routes?tokenIn=0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee&tokenOut=0xc2132d05d31c914a87c6611c10748aeb04b58e8f&amountIn=10000000000000000&saveGas=0&gasInclude=1&dexes=&slippageTolerance=100&deadline=&to=0x3f499def42cd6De917A2A8da02F71fC9517E650C&chargeFeeBy=&feeReceiver=&isInBps=&feeAmount=&clientData=%7B%22source%22%3A%22kyberswap%22%7D',
       )
       setData(response.data.data)
     }
